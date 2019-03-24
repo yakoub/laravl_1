@@ -4,6 +4,7 @@
 
 @section('content')
     <h2> Articles index </h2>
+     <a href="{{ route('articles.export') }}"> export </a>
     @foreach ($articles as $article)
     <section>
         <header>
@@ -17,4 +18,5 @@
         </p>
     </section>
     @endforeach
+    {{ $articles->links() }}
 @endsection

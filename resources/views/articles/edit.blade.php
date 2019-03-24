@@ -4,7 +4,7 @@
 
 @section('content')
     <h2> Edit Article </h2>
-    <form action="{{route('article.update', ['article' => $article])}}" method="PUT">
+    <form action="{{route('article.update', ['article' => $article])}}" method="PATCH">
         @csrf
         <div class="group">
             <div class="field">
