@@ -14,7 +14,7 @@ class ArticleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $articles = article::query()->paginate(10);
         return view('articles', ['articles' => $articles]);
@@ -25,9 +25,21 @@ class ArticleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function export(Exporter $exporter)
+    public function export(Request $request)
     {
-        return $exporter->download(new ArticleExport, 'articles.xls');
+        $interval = $request->query('interval', false);
+        $batch = $request->query('batch', false);
+        $query = article::query();
+        if ($interval) {
+            $query->whereBetween('created_at', $interval); 
+        }
+        $max = $query->count(); 
+        if ($batch === false) {
+            return view('articles.export', ['interval' => $interval, 'max' => $max]);
+        }
+        $query->offset($batch)->limit(100);
+        $batch+=1000;
+        return response()->json($batch);
     }
 
     /**
