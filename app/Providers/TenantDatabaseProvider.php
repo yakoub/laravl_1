@@ -5,17 +5,21 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
+use App\Util\Greeting;
+use App\Positive\PositiveGreeting;
 
 class TenantDatabaseProvider extends ServiceProvider
 {
-    /**
-     * Register services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        //
+    /*public $bindings = [
+        Greeting::class => PositiveGreeting::class
+    ];*/
+
+    public function register() {
+        $this->app->bind(
+            'App\Util\Lingual',
+            'App\Positive\PositiveGreeting'
+        );
+            //'App\Util\Greeting'
     }
 
     /**
