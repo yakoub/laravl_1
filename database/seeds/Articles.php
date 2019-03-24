@@ -12,7 +12,7 @@ class Articles extends Seeder
      */
     public function run()
     {
-        foreach (range(1,5) as $item) {
+        foreach (range(1, 100000) as $item) {
             $article = new article;
             $article->title = "article-{$item}";
             $article->teaser = "teaser-{$item}";

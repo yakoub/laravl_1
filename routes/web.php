@@ -11,10 +11,10 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'HomeController');
 
 Route::resources([
   'article' => 'ArticleController',
 ]);
+
+Route::get('articles/export', 'ArticleController@export')->name('articles.export');
