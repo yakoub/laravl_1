@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\article;
+use App\Exports\ArticleExport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Exporter;
 
 class ArticleController extends Controller
 {
@@ -14,8 +16,18 @@ class ArticleController extends Controller
      */
     public function index()
     {
-        $articles = article::all();
+        $articles = article::query()->paginate(10);
         return view('articles', ['articles' => $articles]);
+    }
+
+    /**
+     * export.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function export(Exporter $exporter)
+    {
+        return $exporter->download(new ArticleExport, 'articles.xls');
     }
 
     /**
@@ -76,6 +88,7 @@ class ArticleController extends Controller
      */
     public function update(Request $request, article $article)
     {
+    error_log('runsssss');
         $article->title = $request->input('title');
         $article->teaser = $request->input('teaser');
         $article->body = $request->input('body');
