@@ -7,7 +7,10 @@
         <header>
             <h3>
                 <label for="batch_progress"> Export progress </label>
-                <progress id="batch_progress" max="{{$max}}"> Starting </progress>
+                <progress id="batch_progress" max="{{$max}}" 
+                    data-name="{{$name}}"> 
+                    Starting 
+                </progress>
             </h3>
         </header>
         <p>
@@ -22,6 +25,13 @@
                 progress: null,
                 current: 0
             };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                export_progress.progress = document.querySelector('#batch_progress');
+                export_progress.pinging = window.setInterval(batch_request, 1000);
+                var name = export_progress.progress.dataset.name;
+                export_progress.url.searchParams.set('name', name);
+            });
 
             function batch_response() {
                 var response = JSON.parse(this.responseText);
@@ -40,15 +50,13 @@
             function batch_request() {
                 var xhr = new XMLHttpRequest();
                 xhr.addEventListener('load', batch_response);
-                export_progress.url.searchParams.set('batch', export_progress.current);
-                xhr.open('GET', export_progress.url.toString());
+                var url = export_progress.url;
+                url.searchParams.set('batch', export_progress.current);
+                url.searchParams.set('batch', export_progress.current);
+                xhr.open('GET', url.toString());
                 xhr.send();
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                export_progress.progress = document.querySelector('#batch_progress');
-                export_progress.pinging = window.setInterval(batch_request, 1000);
-            });
         })();
     </script>
 @endsection

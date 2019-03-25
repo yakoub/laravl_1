@@ -30,16 +30,18 @@ class ArticleController extends Controller
     {
         $interval = $request->query('interval', false);
         $batch = $request->query('batch', false);
+        $name = $request->query('name', bin2hex(random_bytes(5)));
         $query = article::query();
         if ($interval) {
             $query->whereBetween('created_at', $interval); 
         }
         $max = $query->count(); 
         if ($batch === false) {
-            return view('articles.export', ['interval' => $interval, 'max' => $max]);
+            return view('articles.export', compact('interval', 'max', 'name'));
         }
-        $fcsv = fopen(Storage::path('output.csv'), 'a');
-        Storage::setVisibility('output.csv', 'private');
+        $filename = "{$name}.csv";
+        $fcsv = fopen(Storage::path($filename), 'a');
+        Storage::setVisibility($filename, 'private');
 
         $articles = $query->offset($batch)->limit(1000)->get();
         foreach ($articles as $article) {
@@ -51,14 +53,16 @@ class ArticleController extends Controller
         $url = '';
         $batch += 1000;
         if ($batch >= $max) {
-            $url = route('articles.download', ['filename' => 'output.csv']);
+            $url = route('articles.download', ['name' => $name]);
         }
-        return response()->json(['batch' => $batch, 'url' => $url]);
+        $data = compact('batch', 'url', 'name');
+        return response()->json($data);
     }
 
-    public function download($filename) {
+    public function download($name) {
+        $filename = "{$name}.csv";
         $uri = Storage::path($filename);
-        return response()->download($uri)->deleteFileAfterSend();
+        return response()->download($uri, 'export.csv')->deleteFileAfterSend();
     }
 
     /**
