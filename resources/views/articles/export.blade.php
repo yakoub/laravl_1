@@ -12,6 +12,7 @@
         </header>
         <p>
             Exporting
+            <a href="" style="display:none"> download ready </a>
         </p>
     </section>
     <script type="text/javascript">
@@ -23,12 +24,17 @@
             };
 
             function batch_response() {
-                export_progress.current = parseInt(this.responseText);
-                if (export_progress.current >= parseInt(export_progress.progress.max)) {
-                    window.clearInterval(export_progress.pinging);
-                }
+                var response = JSON.parse(this.responseText);
+
+                export_progress.current = response.batch;
                 export_progress.progress.value = export_progress.current;
                 console.log(export_progress.current);
+                if (response.url) {
+                    window.clearInterval(export_progress.pinging);
+                    var download_link = document.querySelector('section p a');
+                    download_link.href = response.url;
+                    download_link.style.display = 'inline';
+                }
             }
 
             function batch_request() {

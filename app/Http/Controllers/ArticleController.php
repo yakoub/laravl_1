@@ -6,6 +6,7 @@ use App\article;
 use App\Exports\ArticleExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Exporter;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
@@ -37,9 +38,27 @@ class ArticleController extends Controller
         if ($batch === false) {
             return view('articles.export', ['interval' => $interval, 'max' => $max]);
         }
-        $query->offset($batch)->limit(100);
-        $batch+=1000;
-        return response()->json($batch);
+        $fcsv = fopen(Storage::path('output.csv'), 'a');
+        Storage::setVisibility('output.csv', 'private');
+
+        $articles = $query->offset($batch)->limit(1000)->get();
+        foreach ($articles as $article) {
+            $row = [$article->title, $article->teaser, $article->body];
+            fputcsv($fcsv, $row);
+            unset($row);
+        }
+
+        $url = '';
+        $batch += 1000;
+        if ($batch >= $max) {
+            $url = route('articles.download', ['filename' => 'output.csv']);
+        }
+        return response()->json(['batch' => $batch, 'url' => $url]);
+    }
+
+    public function download($filename) {
+        $uri = Storage::path($filename);
+        return response()->download($uri)->deleteFileAfterSend();
     }
 
     /**

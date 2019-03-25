@@ -18,3 +18,5 @@ Route::resources([
 ]);
 
 Route::get('articles/export', 'ArticleController@export')->name('articles.export');
+
+Route::get('downloads/{filename}', 'ArticleController@download')->name('articles.download');
