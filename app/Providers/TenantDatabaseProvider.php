@@ -18,8 +18,8 @@ class TenantDatabaseProvider extends ServiceProvider
         $this->app->bind(
             'App\Util\Lingual',
             'App\Positive\PositiveGreeting'
-        );
             //'App\Util\Greeting'
+        );
     }
 
     /**
