@@ -17,7 +17,6 @@ Route::resources([
   'article' => 'ArticleController',
 ]);
 
-Route::get('articles/export', 'ArticleController@export')->name('articles.export');
-
-Route::post('export/start', 'ArticleController@start')->name('export.start');
-Route::get('downloads/{filename}', 'ArticleController@download')->name('articles.download');
+Route::post('export/start', 'ExportController@start')->name('export.start');
+Route::get('export/progress', 'ExportController@progress')->name('export.progress');
+Route::get('export/download/{name}', 'ExportController@download')->name('export.download');
