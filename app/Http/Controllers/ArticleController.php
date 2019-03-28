@@ -6,6 +6,7 @@ use App\article;
 use App\Exports\ArticleExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Exporter;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
@@ -14,7 +15,7 @@ class ArticleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $articles = article::query()->paginate(10);
         return view('articles', ['articles' => $articles]);
@@ -25,9 +26,64 @@ class ArticleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function export(Exporter $exporter)
+    public function export(Request $request)
     {
-        return $exporter->download(new ArticleExport, 'articles.xls');
+        $name = $request->session()->get('export_name', false);
+        $batch = $request->query('batch', false);
+        if (!$name) {
+            $name = $request->query('name', false);
+            if ($batch === false or !$name) {
+                return 'not allowed';
+            }
+        }
+        else {
+            $request->session()->forget('export_name');
+        }
+        $interval = $request->query('interval', false);
+        $query = article::query();
+        if ($interval) {
+            $query->whereBetween('created_at', $interval); 
+        }
+        $max = $query->count(); 
+        if ($batch === false) {
+            return view('articles.export', compact('interval', 'max', 'name'));
+        }
+        $filename = "{$name}.csv";
+        $fcsv = fopen(Storage::path($filename), 'a');
+        Storage::setVisibility($filename, 'private');
+
+        $articles = $query->offset($batch)->limit(1000)->get();
+        foreach ($articles as $article) {
+            $row = [$article->title, $article->teaser, $article->body];
+            fputcsv($fcsv, $row);
+            unset($row);
+        }
+
+        $url = '';
+        $batch += 1000;
+        if ($batch >= $max) {
+            $url = route('articles.download', ['name' => $name]);
+        }
+        $data = compact('batch', 'url', 'name');
+        return response()->json($data);
+    }
+
+    public function start(Request $request) {
+       $route_name = $request->input('route_name');
+       $name = bin2hex(random_bytes(5));
+       $request->session()->put('export_name', $name);
+       $until = $request->input('range');
+       $params = array(
+        'name' => $name,
+        'interval' => ['2019-03-01', $until],
+       );
+       return redirect()->route($route_name, $params);
+    }
+
+    public function download($name) {
+        $filename = "{$name}.csv";
+        $uri = Storage::path($filename);
+        return response()->download($uri, 'export.csv')->deleteFileAfterSend();
     }
 
     /**
