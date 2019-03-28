@@ -4,7 +4,16 @@
 
 @section('content')
     <h2> Articles index </h2>
-    <a href="{{ route('articles.export') }}"> Export </a>
+    <form action={{route('export.start')}} method="POST">
+        @csrf
+        <input type="hidden" value="articles.export" name="route_name" />
+        <select name="range">
+            <option value="2019-03-01" selected>until 2019-03-01</option>
+            <option value="2019-03-20">until 2019-03-20</option>
+            <option value="2019-04-10">until 2019-04-10</option>
+        </select>
+        <button> Export </button>
+    </form>
     @foreach ($articles as $article)
     <section>
         <header>

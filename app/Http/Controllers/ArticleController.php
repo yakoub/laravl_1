@@ -28,9 +28,18 @@ class ArticleController extends Controller
      */
     public function export(Request $request)
     {
-        $interval = $request->query('interval', false);
+        $name = $request->session()->get('export_name', false);
         $batch = $request->query('batch', false);
-        $name = $request->query('name', bin2hex(random_bytes(5)));
+        if (!$name) {
+            $name = $request->query('name', false);
+            if ($batch === false or !$name) {
+                return 'not allowed';
+            }
+        }
+        else {
+            $request->session()->forget('export_name');
+        }
+        $interval = $request->query('interval', false);
         $query = article::query();
         if ($interval) {
             $query->whereBetween('created_at', $interval); 
@@ -57,6 +66,18 @@ class ArticleController extends Controller
         }
         $data = compact('batch', 'url', 'name');
         return response()->json($data);
+    }
+
+    public function start(Request $request) {
+       $route_name = $request->input('route_name');
+       $name = bin2hex(random_bytes(5));
+       $request->session()->put('export_name', $name);
+       $until = $request->input('range');
+       $params = array(
+        'name' => $name,
+        'interval' => ['2019-03-01', $until],
+       );
+       return redirect()->route($route_name, $params);
     }
 
     public function download($name) {
