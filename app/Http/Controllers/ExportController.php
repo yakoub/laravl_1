@@ -3,21 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Http\Request;
 
 class ExportController extends BaseController
 {
     public function start(Request $request) {
-        $route_name = $request->input('route_name');
         $name = bin2hex(random_bytes(5));
-        $request->session()->put('export_name', $name);
         $interval = $request->input('interval');
-        $range = $interval != 'all' ? GeneralFunctions::dateRange($interval) : false;
+        $range = $interval != 'all' ? self::dateRange($interval) : false;
 
         $params = array(
             'name' => $name,
             'interval' => $range,
         );
-        return redirect()->route($route_name, $params);
+        return response()
+            ->json($params);
     }
 
     public function export(Request $request, DataExportInterface $data) {

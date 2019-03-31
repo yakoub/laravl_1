@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\article;
 use App\Exports\ArticleExport;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Exporter;
 use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
