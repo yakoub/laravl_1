@@ -16,10 +16,8 @@
     <button> Export </button>
     <section class="progress-section" style="display:none">
         <label for="batch_progress"> Export progress </label>
-        <progress max=""> 
-            Starting 
-        </progress>
-        <a href="" style="display:none"> Download ready </a>
+        <progress max=""> </progress>
+        <b style="display:none"> Done </b>
     </section>
 </form>
 
@@ -72,6 +70,7 @@
                 self.batch_request();
             }, 1000);
             this.form.querySelector('section').style.display = 'block';
+            this.form.querySelector('section b').style.display = 'none';
         };
 
 
@@ -102,9 +101,7 @@
             console.log(this.current);
             if (response.url) {
                 window.clearInterval(this.pinging);
-                var download_link = this.form.querySelector('section a');
-                download_link.href = response.url;
-                download_link.style.display = 'inline';
+                this.form.querySelector('section b').style.display = 'inline';
                 window.location = response.url;
             }
         }
