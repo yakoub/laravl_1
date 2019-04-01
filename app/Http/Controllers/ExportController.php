@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends BaseController
 {
@@ -11,33 +13,29 @@ class ExportController extends BaseController
         $name = bin2hex(random_bytes(5));
         $interval = $request->input('interval');
         $range = $interval != 'all' ? self::dateRange($interval) : false;
+        $data_class = 'App\DataExport\\' . $request->input('data_export');
+        $data = new $data_class();
+        $query = $data->getQuery($request, $range); 
 
         $params = array(
             'name' => $name,
             'interval' => $range,
+            'max' => $query->count(),
         );
         return response()
             ->json($params);
     }
 
-    public function export(Request $request, DataExportInterface $data) {
-        $name = $request->session()->get('export_name', false);
+    public function progress(Request $request) {
+        $data_class = 'App\DataExport\\' . $request->query('exporter');
+        $data = new $data_class();
+        $name = $request->query('name');
         $batch = $request->query('batch', false);
-        if (!$name) {
-            $name = $request->query('name', false);
-            if ($batch === false or !$name) {
-                abort(403);
-            }
-        }
-        else {
-            $request->session()->forget('export_name');
-        }
         $interval = $request->query('interval', false);
+
         $query = $data->getQuery($request, $interval); 
         $max = $query->count(); 
-        if ($batch === false) {
-            return view('data_export', compact('max', 'name'));
-        }
+
         $filename = "data-exports/{$name}.csv";
         Storage::makeDirectory('data-exports');
         $fcsv = fopen(Storage::path($filename), 'a');
@@ -56,7 +54,7 @@ class ExportController extends BaseController
         if ($batch >= $max) {
             $url = route('export.download', ['name' => $name]);
         }
-        $data = compact('batch', 'url', 'name');
+        $data = compact('batch', 'url');
         return response()->json($data);
     }
 

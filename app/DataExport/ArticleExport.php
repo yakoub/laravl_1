@@ -3,12 +3,12 @@
 namespace App\DataExport;
 
 use Illuminate\Http\Request;
-use App\Article;
+use App\article;
 
 class ArticleExport implements DataExportInterface {
     
     function getQuery(Request $request, $interval) {
-        $query = Article::query();
+        $query = article::query();
         if ($interval) {
             $query->whereBetween('created_at', $interval); 
         }
